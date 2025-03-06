@@ -1,0 +1,732 @@
+openapi: 3.0.3
+info:
+  title: Gosp API Specification
+  version: 1.0.0
+servers:
+- url: "{protocol}://{host}:{port}"
+  variables:
+    protocol:
+      default: http
+      enum:
+      - http
+      - https
+    host:
+      default: localhost
+    port:
+      default: "18080"
+paths:
+  /auth/register:
+    post:
+      description: Request to register user
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+          description: Successful registretion
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Validation error
+  /auth/login:
+    post:
+      description: Request to login user
+      operationId: loginUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+          description: Successful loginUser
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid login data
+  /users/me:
+    get:
+      description: Request to self user data
+      operationId: getMe
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Found user info
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: User not found
+      security:
+      - BearerAuth: []
+  /users:
+    get:
+      description: Request to list of all users on server
+      operationId: getUsersList
+      parameters:
+      - description: Query only online or offline users
+        explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          default: offline
+          enum:
+          - online
+          - offline
+          example: online
+          type: string
+        style: form
+      - description: Count of elements to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          example: 10
+          type: integer
+        style: form
+      - description: Offset
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          example: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: List of all users on server
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+  /chats:
+    get:
+      description: Request to list of chats
+      operationId: getChats
+      parameters:
+      - description: Count of elements to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          example: 10
+          type: integer
+        style: form
+      - description: Offset
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          example: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Chat'
+                type: array
+          description: List of available chats
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+    post:
+      description: Request to create new chat
+      operationId: createChat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chat'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+          description: Chat successfully created
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+  /chats/{chatId}:
+    delete:
+      description: Delete chat by specific ID
+      operationId: deleteChat
+      parameters:
+      - example: 550e8400-e29b-41d4-a716-446655440000
+        explode: false
+        in: path
+        name: chatId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Chat successfully deleted
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbiden - User has no permission to delete chat
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Chat not found
+      security:
+      - BearerAuth: []
+    get:
+      description: Get chat by specific ID
+      operationId: getChat
+      parameters:
+      - example: 550e8400-e29b-41d4-a716-446655440000
+        explode: false
+        in: path
+        name: chatId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+          description: Found chat
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbiden - User has no permission to get chat
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Chat not found
+      security:
+      - BearerAuth: []
+    put:
+      description: Request to update existing chat
+      operationId: updateChat
+      parameters:
+      - example: 550e8400-e29b-41d4-a716-446655440000
+        explode: false
+        in: path
+        name: chatId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chat'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+          description: Successfully chat updated
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbiden - User has no permission to update chat
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Chat not found
+      security:
+      - BearerAuth: []
+  /chats/{chatId}/messages:
+    get:
+      description: Get list of messages
+      operationId: getMessages
+      parameters:
+      - example: 550e8400-e29b-41d4-a716-446655440000
+        explode: false
+        in: path
+        name: chatId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Count of elements to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          example: 10
+          type: integer
+        style: form
+      - description: Offset
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          example: 0
+          type: integer
+        style: form
+      - description: Return messages after this ID
+        explode: true
+        in: query
+        name: fromMessageId
+        required: false
+        schema:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          format: uuid
+          type: string
+        style: form
+      - description: Sort order
+        explode: true
+        in: query
+        name: order
+        required: false
+        schema:
+          default: desc
+          enum:
+          - asc
+          - desc
+          example: desc
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Message'
+                type: array
+          description: List of chat messages
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Chat not found
+      security:
+      - BearerAuth: []
+    post:
+      description: Send new message
+      operationId: createMessage
+      parameters:
+      - example: 550e8400-e29b-41d4-a716-446655440000
+        explode: false
+        in: path
+        name: chatId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: Message successfuly sent
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Chat not found
+      security:
+      - BearerAuth: []
+  /chats/{chatId}/messages/{messageId}:
+    get:
+      description: Get message by specific ID
+      operationId: getMessage
+      parameters:
+      - example: 550e8400-e29b-41d4-a716-446655440000
+        explode: false
+        in: path
+        name: chatId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - example: 10
+        explode: false
+        in: path
+        name: messageId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: Found message
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Message not found
+      security:
+      - BearerAuth: []
+    put:
+      description: Update a message
+      operationId: updateMessage
+      parameters:
+      - example: 550e8400-e29b-41d4-a716-446655440000
+        explode: false
+        in: path
+        name: chatId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - example: 10
+        explode: false
+        in: path
+        name: messageId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: Message successfully updated
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden - User has no permission to update message
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Message not found
+      security:
+      - BearerAuth: []
+components:
+  schemas:
+    User:
+      example:
+        lastSeen: 2025-02-18T16:45:41+07:00
+        avatarUrl: http://example.com/avatar/id
+        displayName: Jhon Doe
+        id: "12345"
+        username: exampleusername
+        status: online
+      properties:
+        id:
+          example: "12345"
+          type: string
+        username:
+          example: exampleusername
+          type: string
+        displayName:
+          example: Jhon Doe
+          type: string
+        avatarUrl:
+          example: http://example.com/avatar/id
+          type: string
+        status:
+          enum:
+          - online
+          - offline
+          example: online
+          type: string
+        lastSeen:
+          example: 2025-02-18T16:45:41+07:00
+          type: string
+      type: object
+    AuthRequest:
+      example:
+        password: secretpassword
+        username: exampleusername
+      properties:
+        username:
+          example: exampleusername
+          type: string
+        password:
+          example: secretpassword
+          type: string
+      type: object
+    AuthResponse:
+      example:
+        accessExpiresIn: 1516239600
+        accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9zc28uZXhhbXBsZS5jb20iLCJhdWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJleHAiOjE1MTYyMzk2MDAsImlhdCI6MTUxNjIzOTAyMiwianRpIjoiYzg4ZTU2NTUtMzg3NC00MTIxLWIxYzEtZWYxYTgzN2EzMjhkIiwidHlwZSI6ImFjY2VzcyJ9.7X3-xyGKMhOmdQw4iGtd0gA4wQPIAlWbKu4-L2UEEto
+        type: Bearer
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9zc28uZXhhbXBsZS5jb20iLCJhdWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJleHAiOjE1MTYyNDk2MDAsImlhdCI6MTUxNjIzOTAyMiwianRpIjoiNDdmOTczNWYtZDFkNC00NTA1LWFlNjktMjdlNWU1OTRhOGY0IiwidHlwZSI6InJlZnJlc2gifQ.UYsYmIntDdrT0_y6kmdNcO5S2AAaLeYrhWKfbbiOkBs
+        refreshExpiresIn: 1516249600
+      properties:
+        accessToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9zc28uZXhhbXBsZS5jb20iLCJhdWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJleHAiOjE1MTYyMzk2MDAsImlhdCI6MTUxNjIzOTAyMiwianRpIjoiYzg4ZTU2NTUtMzg3NC00MTIxLWIxYzEtZWYxYTgzN2EzMjhkIiwidHlwZSI6ImFjY2VzcyJ9.7X3-xyGKMhOmdQw4iGtd0gA4wQPIAlWbKu4-L2UEEto
+          type: string
+        accessExpiresIn:
+          example: 1516239600
+          type: integer
+        refreshToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9zc28uZXhhbXBsZS5jb20iLCJhdWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJleHAiOjE1MTYyNDk2MDAsImlhdCI6MTUxNjIzOTAyMiwianRpIjoiNDdmOTczNWYtZDFkNC00NTA1LWFlNjktMjdlNWU1OTRhOGY0IiwidHlwZSI6InJlZnJlc2gifQ.UYsYmIntDdrT0_y6kmdNcO5S2AAaLeYrhWKfbbiOkBs
+          type: string
+        refreshExpiresIn:
+          example: 1516249600
+          type: integer
+        type:
+          example: Bearer
+          type: string
+      type: object
+    Chat:
+      example:
+        name: Just new chat
+        id: "12345"
+        type: public
+        participants:
+        - "12345"
+        - "67890"
+      properties:
+        id:
+          example: "12345"
+          type: string
+        name:
+          example: Just new chat
+          type: string
+        type:
+          enum:
+          - private
+          - public
+          example: public
+          type: string
+        participants:
+          example:
+          - "12345"
+          - "67890"
+          items:
+            type: string
+          type: array
+      required:
+      - name
+      - type
+      type: object
+    Message:
+      example:
+        senderId: "12345"
+        attachments:
+        - size: 200123
+          inline: true
+          id: "12345"
+          mimeType: image/jpeg
+          type: image
+          url: http://example.com/images/id
+        - size: 200123
+          inline: true
+          id: "12345"
+          mimeType: image/jpeg
+          type: image
+          url: http://example.com/images/id
+        chatId: "12345"
+        id: "12345"
+        content: example message
+        timestamp: 2025-02-18T16:45:41+07:00
+        status: delivered
+      properties:
+        id:
+          example: "12345"
+          type: string
+        senderId:
+          example: "12345"
+          type: string
+        chatId:
+          example: "12345"
+          type: string
+        content:
+          example: example message
+          type: string
+        timestamp:
+          example: 2025-02-18T16:45:41+07:00
+          type: string
+        status:
+          enum:
+          - delivered
+          - undelivered
+          example: delivered
+          type: string
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+      type: object
+    Attachment:
+      example:
+        size: 200123
+        inline: true
+        id: "12345"
+        mimeType: image/jpeg
+        type: image
+        url: http://example.com/images/id
+      properties:
+        id:
+          example: "12345"
+          type: string
+        type:
+          example: image
+          type: string
+        url:
+          example: http://example.com/images/id
+          type: string
+        size:
+          example: 200123
+          type: integer
+        mimeType:
+          example: image/jpeg
+          type: string
+        inline:
+          example: true
+          type: boolean
+      type: object
+    ErrorResponse:
+      example:
+        error: Invalid input data
+      properties:
+        error:
+          example: Invalid input data
+          type: string
+      type: object
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
