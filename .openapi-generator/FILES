@@ -1,10 +1,8 @@
-.openapi-generator-ignore
 Dockerfile
 api/openapi.yaml
 go.mod
 go/README.md
 go/api_default.go
-go/model_attachment.go
 go/model_auth_request.go
 go/model_auth_response.go
 go/model_chat.go

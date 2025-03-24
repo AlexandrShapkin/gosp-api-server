@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Gosp API Specification
-  version: 1.0.0
+  version: 1.1.0
 servers:
 - url: "{protocol}://{host}:{port}"
   variables:
@@ -644,22 +644,9 @@ components:
     Message:
       example:
         senderId: "12345"
-        attachments:
-        - size: 200123
-          inline: true
-          id: "12345"
-          mimeType: image/jpeg
-          type: image
-          url: http://example.com/images/id
-        - size: 200123
-          inline: true
-          id: "12345"
-          mimeType: image/jpeg
-          type: image
-          url: http://example.com/images/id
         chatId: "12345"
+        encryptedContent: example message
         id: "12345"
-        content: example message
         timestamp: 2025-02-18T16:45:41+07:00
         status: delivered
       properties:
@@ -672,7 +659,7 @@ components:
         chatId:
           example: "12345"
           type: string
-        content:
+        encryptedContent:
           example: example message
           type: string
         timestamp:
@@ -684,38 +671,6 @@ components:
           - undelivered
           example: delivered
           type: string
-        attachments:
-          items:
-            $ref: '#/components/schemas/Attachment'
-          type: array
-      type: object
-    Attachment:
-      example:
-        size: 200123
-        inline: true
-        id: "12345"
-        mimeType: image/jpeg
-        type: image
-        url: http://example.com/images/id
-      properties:
-        id:
-          example: "12345"
-          type: string
-        type:
-          example: image
-          type: string
-        url:
-          example: http://example.com/images/id
-          type: string
-        size:
-          example: 200123
-          type: integer
-        mimeType:
-          example: image/jpeg
-          type: string
-        inline:
-          example: true
-          type: boolean
       type: object
     ErrorResponse:
       example:
